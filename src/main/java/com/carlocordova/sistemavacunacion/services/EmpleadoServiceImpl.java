@@ -6,10 +6,7 @@ import com.carlocordova.sistemavacunacion.entities.Empleado;
 import com.carlocordova.sistemavacunacion.exceptions.ResourceNotFoundException;
 import com.carlocordova.sistemavacunacion.repositories.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,24 +28,14 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     }
 
     @Override
-    public EmpleadoResponse getAllEmployees(int page, int size, String sortBy, String sortDir) {
+    public EmpleadoResponse findAllEmployees(int page, int size, String sortBy, String sortDir) {
         //Paginacion de empleados
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Empleado> pageEmpleados = empleadoRepository.findAll(pageable);
-        List<Empleado> empleados = pageEmpleados.getContent();
-        List<EmpleadoDTO> content = empleados.stream().map(this::mapDTO).collect(Collectors.toList());
-
-        EmpleadoResponse empleadoResponse = new EmpleadoResponse();
-        empleadoResponse.setContent(content);
-        empleadoResponse.setNumberPage(pageEmpleados.getNumber());
-        empleadoResponse.setSizePage(pageEmpleados.getSize());
-        empleadoResponse.setTotalElements(pageEmpleados.getTotalElements());
-        empleadoResponse.setTotalPages(pageEmpleados.getTotalPages());
-        empleadoResponse.setLast(pageEmpleados.isLast());
-        return empleadoResponse;
+        return getEmpleadoResponse(pageEmpleados);
     }
 
     @Override
@@ -76,6 +63,41 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         Empleado empleado = empleadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado", "id", id));
         empleadoRepository.delete(empleado);
+    }
+
+    @Override
+    public EmpleadoResponse findAllVaccinatedEmployees(int page, int size, String sortBy, String sortDir) {
+        //Paginacion de empleados
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        List<Empleado> listaEmpleadosVacunados = empleadoRepository.findAllVaccinatedEmployees();
+        Page<Empleado> pageEmpleados = new PageImpl<>(listaEmpleadosVacunados, pageable, listaEmpleadosVacunados.size());
+        return getEmpleadoResponse(pageEmpleados);
+    }
+
+    private EmpleadoResponse getEmpleadoResponse(Page<Empleado> pageEmpleados) {
+        List<Empleado> empleados = pageEmpleados.getContent();
+        List<EmpleadoDTO> content = empleados.stream().map(this::mapDTO).collect(Collectors.toList());
+
+        EmpleadoResponse empleadoResponse = new EmpleadoResponse();
+        empleadoResponse.setContent(content);
+        empleadoResponse.setNumberPage(pageEmpleados.getNumber());
+        empleadoResponse.setSizePage(pageEmpleados.getSize());
+        empleadoResponse.setTotalElements(pageEmpleados.getTotalElements());
+        empleadoResponse.setTotalPages(pageEmpleados.getTotalPages());
+        empleadoResponse.setLast(pageEmpleados.isLast());
+        return empleadoResponse;
+    }
+
+
+    //Si el empleado tiene mas de el numero minimo de vacunas, se le considera como vacunado
+    private boolean employeeIsVaccinated(long id) {
+        Empleado empleado = empleadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Empleado no encontrado", "id", id));
+        int cantidadVacunas = empleadoRepository.countVaccinesByEmpleadoId(id);
+        return cantidadVacunas >= NUMERO_MIN_VACUNAS;
     }
 
     //Convertir Entity a DTO

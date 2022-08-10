@@ -2,11 +2,14 @@ package com.carlocordova.sistemavacunacion.controllers;
 
 import com.carlocordova.sistemavacunacion.dto.EmpleadoDTO;
 import com.carlocordova.sistemavacunacion.dto.EmpleadoResponse;
+import com.carlocordova.sistemavacunacion.entities.Empleado;
 import com.carlocordova.sistemavacunacion.services.EmpleadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/empleados")
@@ -25,7 +28,7 @@ public class EmpleadoController {
             @RequestParam(value = "size", defaultValue = "10", required = false) int size,
             @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "ASC", required = false) String sortDir) {
-        return empleadoService.getAllEmployees(page, size, sortBy, sortDir);
+        return empleadoService.findAllEmployees(page, size, sortBy, sortDir);
     }
 
     @GetMapping("/{id}")
@@ -42,5 +45,14 @@ public class EmpleadoController {
     public ResponseEntity<String> deleteById(@PathVariable(name = "id") long id) {
         empleadoService.deleteEmployee(id);
         return new ResponseEntity<>("Empleado eliminado con id '" + id + "'", HttpStatus.OK);
+    }
+
+    @GetMapping("/vacunados")
+    public EmpleadoResponse findAllVaccinated(
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "ASC", required = false) String sortDir) {
+        return empleadoService.findAllVaccinatedEmployees(page, size, sortBy, sortDir);
     }
 }

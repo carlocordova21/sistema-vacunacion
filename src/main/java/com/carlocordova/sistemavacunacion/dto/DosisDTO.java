@@ -1,11 +1,11 @@
 package com.carlocordova.sistemavacunacion.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDate;
 
 public class DosisDTO {
     private Long id;
-    private String nombreEmpleado;
-    private String nombreVacuna;
     private LocalDate fechaDosis;
     private Integer numeroDosis;
 
@@ -18,22 +18,6 @@ public class DosisDTO {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getNombreEmpleado() {
-        return nombreEmpleado;
-    }
-
-    public void setNombreEmpleado(String nombreEmpleado) {
-        this.nombreEmpleado = nombreEmpleado;
-    }
-
-    public String getNombreVacuna() {
-        return nombreVacuna;
-    }
-
-    public void setNombreVacuna(String nombreVacuna) {
-        this.nombreVacuna = nombreVacuna;
     }
 
     public LocalDate getFechaDosis() {
