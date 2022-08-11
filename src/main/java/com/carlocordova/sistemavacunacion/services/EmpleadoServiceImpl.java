@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,9 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleado.setNombres(empleadoDTO.getNombres());
         empleado.setApellidos(empleadoDTO.getApellidos());
         empleado.setCorreo(empleadoDTO.getCorreo());
+        empleado.setFechaNacimiento(empleadoDTO.getFechaNacimiento());
+        empleado.setDireccion(empleadoDTO.getDireccion());
+        empleado.setTelefono(empleadoDTO.getTelefono());
 
         Empleado empleadoActualizado = empleadoRepository.save(empleado);
         return mapDTO(empleadoActualizado);
@@ -65,6 +69,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleadoRepository.delete(empleado);
     }
 
+    //Listar todos los empleados que hayan sido vacunados mas veces que el numero minimo de vacunas
     @Override
     public EmpleadoResponse findAllVaccinatedEmployees(int page, int size, String sortBy, String sortDir) {
         //Paginacion de empleados
@@ -75,6 +80,36 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         List<Empleado> listaEmpleadosVacunados = empleadoRepository.findAllVaccinatedEmployees();
         Page<Empleado> pageEmpleados = new PageImpl<>(listaEmpleadosVacunados, pageable, listaEmpleadosVacunados.size());
         return getEmpleadoResponse(pageEmpleados);
+    }
+
+    //Listar empleados por el tipo de vacuna
+    @Override
+    public List<EmpleadoDTO> findAllByVaccinesType(long vacunaId) {
+        List<Empleado> empleados = empleadoRepository.findAllByVaccinesType(vacunaId);
+        if(empleados.isEmpty()) {
+            throw new ResourceNotFoundException("No hay empleados con la vacuna seleccionada", "vacunaId", vacunaId);
+        }
+        List<EmpleadoDTO> empleadoDTOS = empleados.stream()
+                .map(this::mapDTO)
+                .collect(Collectors.toList());
+
+        return empleadoDTOS;
+    }
+
+    @Override
+    public List<EmpleadoDTO> findAllByVaccinesDate(LocalDate dateStart, LocalDate dateEnd) {
+        List<Empleado> empleados = empleadoRepository.findAllByVaccinesDate(dateStart, dateEnd);
+
+        if(dateStart == null || dateEnd == null) {
+            throw new IllegalArgumentException("Debe ingresar una fecha de inicio y una de fin");
+        }
+        if(empleados.isEmpty()) {
+            throw new ResourceNotFoundException("No hay empleados con las fechas ingresadas", "dateStart: " + dateStart + " dateEnd: " + dateEnd, -1L);
+        }
+        List<EmpleadoDTO> empleadoDTOS = empleados.stream()
+                .map(this::mapDTO)
+                .collect(Collectors.toList());
+        return empleadoDTOS;
     }
 
     private EmpleadoResponse getEmpleadoResponse(Page<Empleado> pageEmpleados) {

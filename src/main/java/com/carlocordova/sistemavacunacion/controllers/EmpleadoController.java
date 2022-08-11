@@ -2,13 +2,14 @@ package com.carlocordova.sistemavacunacion.controllers;
 
 import com.carlocordova.sistemavacunacion.dto.EmpleadoDTO;
 import com.carlocordova.sistemavacunacion.dto.EmpleadoResponse;
-import com.carlocordova.sistemavacunacion.entities.Empleado;
 import com.carlocordova.sistemavacunacion.services.EmpleadoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -54,5 +55,17 @@ public class EmpleadoController {
             @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "ASC", required = false) String sortDir) {
         return empleadoService.findAllVaccinatedEmployees(page, size, sortBy, sortDir);
+    }
+
+    @GetMapping("/tipoVacuna/{vacunaId}")
+    public List<EmpleadoDTO> findAllByVaccinesType(@PathVariable long vacunaId) {
+        return empleadoService.findAllByVaccinesType(vacunaId);
+    }
+
+    @GetMapping("/fechaVacuna")
+    public List<EmpleadoDTO> findAllByVaccinesDate(
+            @RequestParam(value = "from", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateStart,
+            @RequestParam(value = "to", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateEnd) {
+        return empleadoService.findAllByVaccinesDate(dateStart, dateEnd);
     }
 }

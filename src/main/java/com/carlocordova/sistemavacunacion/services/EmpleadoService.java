@@ -4,6 +4,7 @@ import com.carlocordova.sistemavacunacion.dto.EmpleadoDTO;
 import com.carlocordova.sistemavacunacion.dto.EmpleadoResponse;
 import com.carlocordova.sistemavacunacion.entities.Empleado;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface EmpleadoService {
@@ -19,4 +20,8 @@ public interface EmpleadoService {
     void deleteEmployee(long id);
 
     EmpleadoResponse findAllVaccinatedEmployees(int page, int size, String sortBy, String sortDir);
+
+    List<EmpleadoDTO> findAllByVaccinesType(long vacunaId);
+
+    List<EmpleadoDTO> findAllByVaccinesDate(LocalDate dateStart, LocalDate dateEnd);
 }
